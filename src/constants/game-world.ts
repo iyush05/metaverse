@@ -23,3 +23,5 @@ export const DIRECTION_KEYS: Record<string, Direction> = {
     ArrowLeft: "LEFT",
     ArrowRight: "RIGHT",
 }
+
+export const MOVE_SPEED = 0.03;
