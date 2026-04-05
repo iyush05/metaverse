@@ -10,3 +10,13 @@ export interface PlayerPayload extends PlayerState {
 }
 
 export type OtherPlayers = Record<string, PlayerState>;
+
+export interface ChatMessage {
+    id: string;
+    text: string;
+}
+
+export interface SystemMessage {
+    text: string;
+    type: 'merge' | 'other';
+}

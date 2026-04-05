@@ -21,4 +21,14 @@ interface SocketData {
     currentRoom: string | null;
 }
 
-export type { PlayerState, RoomState, Rooms, JoinRoomCallback, SocketData };
+interface ChatMessage {
+    id: string;
+    text: string;
+}
+
+interface SystemMessage {
+    text: string;
+    type: 'merge' | 'other';
+}
+
+export type { PlayerState, RoomState, Rooms, JoinRoomCallback, SocketData, ChatMessage, SystemMessage };

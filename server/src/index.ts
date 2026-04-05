@@ -7,7 +7,73 @@ const io = new Server(3000, {
     }
 });
 
+const PROXIMITY_THRESHOLD = 256;
 const rooms: Rooms = {};
+const roomGroups: Record<string, string[][]> = {};
+
+function calculateGroups(roomId: string) {
+    const players = rooms[roomId];
+    if (!players) return;
+
+    const socketIds = Object.keys(players);
+    const groups: string[][] = [];
+    const visited = new Set<string>();
+
+    for (const id1 of socketIds) {
+        if (visited.has(id1)) continue;
+
+        const currentGroup: string[] = [];
+        const queue: string[] = [id1];
+        visited.add(id1);
+
+        while (queue.length > 0) {
+            const currentId = queue.shift()!;
+            currentGroup.push(currentId);
+
+            const p1 = players[currentId];
+            for (const id2 of socketIds) {
+                if (visited.has(id2)) continue;
+                const p2 = players[id2];
+
+                if (!p1 || !p2) continue;
+
+                const distance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                if (distance < PROXIMITY_THRESHOLD) {
+                    visited.add(id2);
+                    queue.push(id2);
+                }
+            }
+        }
+        groups.push(currentGroup.sort());
+    }
+
+    const previousGroups = roomGroups[roomId] || [];
+    
+    for (const newGroup of groups) {
+        // Tells everyone in the group whether other players are near
+        const inGroup = newGroup.length > 1;
+        newGroup.forEach(id => {
+            io.to(id).emit("group-status", { inGroup });
+        });
+
+        if (newGroup.length < 2) continue;
+        
+        const contributingOldGroups = previousGroups.filter(oldGroup => 
+            oldGroup.some(id => newGroup.includes(id))
+        );
+
+        if (contributingOldGroups.length > 1) {
+            const names = contributingOldGroups.map(og => `Player ${og[0]?.slice(0, 4) || 'Anon'}`);
+            const msgText = `${names.join(" and ")}'s group joined.`;
+
+            newGroup.forEach(id => {
+                io.to(id).emit("system-message", { text: msgText, type: 'merge' });
+            });
+        }
+    }
+
+    roomGroups[roomId] = groups;
+}
 
 io.on("connection", (socket) => {
     let currentRoom = null;
@@ -25,6 +91,8 @@ io.on("connection", (socket) => {
         const initialState: PlayerState = {x: 640, y: 640, direction: "DOWN", isMoving: false };
         rooms[roomId][socket.id] = initialState;
         socket.to(roomId).emit("player-joined", { id: socket.id, ...initialState });
+        
+        calculateGroups(roomId);
     });
 
     socket.on("player-moved", (state: PlayerState) => {
@@ -32,7 +100,35 @@ io.on("connection", (socket) => {
         if (!roomId || !rooms[roomId]) return;
         rooms[roomId][socket.id] = state;
         socket.to(roomId).emit("player-moved", { id: socket.id, ...state }); 
-    })
+        
+        calculateGroups(roomId);
+    });
+
+    socket.on("send-chat", (text: string) => {
+        const roomId = socket.data.currentRoom;
+        if (!roomId || !rooms[roomId]) return;
+
+        const currentGroups = roomGroups[roomId] || [];
+        const senderGroup = currentGroups.find(g => g.includes(socket.id));
+        
+        if (senderGroup) {
+            senderGroup.forEach(id => {
+                io.to(id).emit("chat-message", { id: socket.id, text });
+            });
+        }
+    });
+
+    socket.on("leave-room", (roomId) => {
+        if (socket.data.currentRoom === roomId) {
+            socket.data.currentRoom = null;
+        }
+        if (rooms[roomId] && rooms[roomId][socket.id]) {
+            delete rooms[roomId][socket.id];
+            io.to(roomId).emit("player-left", { id: socket.id });
+        }
+        socket.leave(roomId);
+        calculateGroups(roomId);
+    });
 
     socket.on("disconnect", () => {
         const roomId = socket.data.currentRoom;
@@ -40,5 +136,7 @@ io.on("connection", (socket) => {
 
         delete rooms[roomId][socket.id];
         io.to(roomId).emit("player-left", { id: socket.id });
+        
+        calculateGroups(roomId);
     });
 });

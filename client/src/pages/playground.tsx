@@ -6,6 +6,7 @@ import { Container } from 'pixi.js'
 import MainContainer from '../components/MainContainer'
 import type { OtherPlayers, PlayerPayload } from '../types/multiplayer'
 import { socket } from '../services/socket'
+import { ChatBox } from '../components/Chat/ChatBox'
 
 extend({ Container })
 
@@ -69,6 +70,7 @@ export const Playground = () => {
       <Application width={canvasSize.width} height={canvasSize.height}>
         <MainContainer canvasSize={canvasSize} otherPlayers={otherPlayers} />
       </Application>
+      <ChatBox />
     </>
   )
 }
