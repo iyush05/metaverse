@@ -1,10 +1,11 @@
 import { Assets, Container, type Texture } from "pixi.js"
 import { extend } from "@pixi/react"
-import { useCallback, useEffect, useState, type PropsWithChildren } from "react"
+import { useCallback, useEffect, useState, useRef, type PropsWithChildren } from "react"
 import Level from "./Levels/Level"
 import Hero from "./Hero/Hero"
 import heroAsset from "../assets/hero.png"
-import { TILE_SIZE } from "../constants/game-world"
+import { TILE_SIZE, DEFAULT_POS_X, DEFAULT_POS_Y } from "../constants/game-world"
+import { Camera } from "./Camera/Camera"
 
 extend({ Container })
 
@@ -16,6 +17,7 @@ export const MainContainer = ({
     canvasSize,
     children
 }: PropsWithChildren<IMainContainerProps>) => {
+    const heroPixelPosition = useRef({ x: DEFAULT_POS_X, y: DEFAULT_POS_Y });
     const [heroPosition, setHeroPosition] = useState<{x: number, y: number}>({x: 0, y: 0});
     const [heroTexture, setHeroTexture] = useState<Texture | null>(null);
 
@@ -35,8 +37,10 @@ export const MainContainer = ({
     return (
         <pixiContainer>
             {children}
-            <Level />
-            {heroTexture && <Hero texture={heroTexture} onMove={updateHeroPosition}/>}
+            <Camera canvasSize={canvasSize} heroPixelPosition={heroPixelPosition}>
+                <Level />
+                {heroTexture && <Hero texture={heroTexture} onMove={updateHeroPosition} pixelPosition={heroPixelPosition} />}
+            </Camera>
         </pixiContainer>
     )
 }

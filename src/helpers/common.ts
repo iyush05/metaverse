@@ -54,3 +54,7 @@ export const handleMovement = (currentPosition: IPosition, targetPosition: IPosi
         completed: false
     }
 }
+
+export const lerp = (start: number, end: number) => {
+    return start + (end - start) * 0.03;
+}
