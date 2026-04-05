@@ -1,11 +1,13 @@
 import { Container, type Texture } from "pixi.js"
 import { extend, useTick } from "@pixi/react"
 import { ANIMATION_SPEED, DEFAULT_POS_X, DEFAULT_POS_Y, MOVE_SPEED } from "../../constants/game-world"
-import { type MutableRefObject, useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, type MutableRefObject } from "react"
 import { useHeroControls } from "./useHeroControls"
 import type { IPosition, Direction } from "../../types/common"
 import { calculateNewTarget, checkCanMove, handleMovement } from "../../helpers/common"
 import { useHeroAnimation } from "./useHeroAnimation"
+import type { PlayerState } from "../../types/multiplayer"
+import { socket } from "../../services/socket"
 
 extend({ Container })
 
@@ -47,6 +49,14 @@ const Hero = ({
 
         if (checkCanMove(newTarget)) {
             targetPosition.current = newTarget;
+
+            const state: PlayerState = {
+                x: newTarget.x,
+                y: newTarget.y,
+                direction,
+                isMoving: true,
+            };
+            socket.emit("player-moved", state);
         }
 
     }, [])
@@ -70,6 +80,14 @@ const Hero = ({
                 onMove(x, y);
                 targetPosition.current = null;
                 isMoving.current = false;
+
+                const state: PlayerState = {
+                    x,
+                    y,
+                    direction: currentDirection.current ?? "DOWN",
+                    isMoving: false,
+                };
+                socket.emit("player-moved", state);
             }
             
         }
