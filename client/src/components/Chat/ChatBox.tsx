@@ -8,6 +8,7 @@ type Message = {
     text: string;
     isSystem?: boolean;
     senderId?: string;
+    senderName?: string;
 };
 
 export const ChatBox = () => {
@@ -25,8 +26,9 @@ export const ChatBox = () => {
     }, [messages]);
 
     useEffect(() => {
-        const handleChat = ({ id, text }: ChatMessage) => {
-            setMessages(prev => [...prev, { id: crypto.randomUUID(), text, senderId: id }]);
+        const handleChat = ({ id, text, name }: ChatMessage) => {
+            if (id === socket.id) return;
+            setMessages(prev => [...prev, { id: crypto.randomUUID(), text, senderId: id, senderName: name }]);
         };
 
         const handleSystem = ({ text, type }: SystemMessage) => {
@@ -60,7 +62,8 @@ export const ChatBox = () => {
         if (!inputValue.trim()) return;
         socket.emit("send-chat", inputValue.trim());
         
-        setMessages(prev => [...prev, { id: crypto.randomUUID(), text: inputValue.trim(), senderId: socket.id }]);
+        const myName = new URLSearchParams(window.location.search).get("name") || undefined;
+        setMessages(prev => [...prev, { id: crypto.randomUUID(), text: inputValue.trim(), senderId: socket.id, senderName: myName }]);
         
         setInputValue("");
     };
@@ -72,7 +75,7 @@ export const ChatBox = () => {
             <div className="chatbox-messages">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`chatbox-message ${msg.isSystem ? 'system' : msg.senderId === socket.id ? 'self' : 'other'}`}>
-                        {!msg.isSystem && <span className="chatbox-sender">{msg.senderId === socket.id ? "You" : `Player ${msg.senderId?.slice(0,4)}`}</span>}
+                        {!msg.isSystem && <span className="chatbox-sender">{msg.senderId === socket.id ? "You" : (msg.senderName || `Player ${msg.senderId?.slice(0,4)}`)}</span>}
                         <span className="chatbox-text">{msg.text}</span>
                     </div>
                 ))}

@@ -50,7 +50,6 @@ function calculateGroups(roomId: string) {
     const previousGroups = roomGroups[roomId] || [];
     
     for (const newGroup of groups) {
-        // Tells everyone in the group whether other players are near
         const inGroup = newGroup.length > 1;
         newGroup.forEach(id => {
             io.to(id).emit("group-status", { inGroup });
@@ -63,7 +62,11 @@ function calculateGroups(roomId: string) {
         );
 
         if (contributingOldGroups.length > 1) {
-            const names = contributingOldGroups.map(og => `Player ${og[0]?.slice(0, 4) || 'Anon'}`);
+            const names = contributingOldGroups.map(og => {
+                const leaderId = og[0];
+                const leaderObj = leaderId ? players[leaderId] : undefined;
+                return leaderObj?.name ? leaderObj.name : `Player ${leaderId?.slice(0, 4) || 'Anon'}`;
+            });
             const msgText = `${names.join(" and ")}'s group joined.`;
 
             newGroup.forEach(id => {
@@ -78,7 +81,7 @@ function calculateGroups(roomId: string) {
 io.on("connection", (socket) => {
     let currentRoom = null;
 
-    socket.on("join-room", (roomId, callback) => {
+    socket.on("join-room", (roomId: string, name: string | undefined, callback: Function) => {
         socket.data.currentRoom = roomId;
         currentRoom = roomId;
         if (!rooms[roomId]) rooms[roomId] = {};
@@ -89,6 +92,7 @@ io.on("connection", (socket) => {
         callback({ players: existingPlayers });
 
         const initialState: PlayerState = {x: 640, y: 640, direction: "DOWN", isMoving: false };
+        if (name) initialState.name = name;
         rooms[roomId][socket.id] = initialState;
         socket.to(roomId).emit("player-joined", { id: socket.id, ...initialState });
         
@@ -98,8 +102,22 @@ io.on("connection", (socket) => {
     socket.on("player-moved", (state: PlayerState) => {
         const roomId = socket.data.currentRoom;
         if (!roomId || !rooms[roomId]) return;
-        rooms[roomId][socket.id] = state;
-        socket.to(roomId).emit("player-moved", { id: socket.id, ...state }); 
+        
+        // Preserve name if not sent back in player-moved
+        const existingName = rooms[roomId][socket.id]?.name;
+        const newState = { ...state };
+        const finalName = state.name || existingName;
+        if (finalName) {
+            newState.name = finalName;
+        }
+        rooms[roomId][socket.id] = newState;
+        
+        const payload: any = { id: socket.id, ...state };
+        if (state.name || existingName) {
+            payload.name = state.name || existingName;
+        }
+        
+        socket.to(roomId).emit("player-moved", payload); 
         
         calculateGroups(roomId);
     });
@@ -112,8 +130,9 @@ io.on("connection", (socket) => {
         const senderGroup = currentGroups.find(g => g.includes(socket.id));
         
         if (senderGroup) {
+            const senderName = rooms[roomId][socket.id]?.name;
             senderGroup.forEach(id => {
-                io.to(id).emit("chat-message", { id: socket.id, text });
+                io.to(id).emit("chat-message", { id: socket.id, text, name: senderName });
             });
         }
     });

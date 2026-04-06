@@ -3,6 +3,7 @@ interface PlayerState {
     y: number;
     direction: "UP" | "DOWN" | "LEFT" | "RIGHT" | undefined;
     isMoving: boolean;
+    name?: string;
 }
 
 interface RoomState {
@@ -24,6 +25,7 @@ interface SocketData {
 interface ChatMessage {
     id: string;
     text: string;
+    name?: string;
 }
 
 interface SystemMessage {

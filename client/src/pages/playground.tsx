@@ -28,10 +28,12 @@ export const Playground = () => {
 
   useEffect(() => {
     if (!roomId) return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const heroName = searchParams.get("name") || undefined;
 
     socket.connect();
 
-    socket.emit("join-room", roomId, ({ players }: { players: OtherPlayers }) => {
+    socket.emit("join-room", roomId, heroName, ({ players }: { players: OtherPlayers }) => {
       const others = { ...players };
       if (socket.id) {
         delete others[socket.id];
@@ -71,6 +73,25 @@ export const Playground = () => {
         <MainContainer canvasSize={canvasSize} otherPlayers={otherPlayers} />
       </Application>
       <ChatBox />
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        background: 'rgba(10, 8, 4, 0.7)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(201, 168, 76, 0.15)',
+        padding: '6px 12px',
+        borderRadius: '6px',
+        fontFamily: 'Cormorant Garamond, serif',
+        color: '#fdf8ee',
+        fontSize: '13px',
+        letterSpacing: '0.1em',
+        pointerEvents: 'auto',
+        userSelect: 'text',
+        zIndex: 10
+      }}>
+        Room ID: <span style={{ color: '#C9A84C', userSelect: 'all' }}>{roomId}</span>
+      </div>
     </>
   )
 }
