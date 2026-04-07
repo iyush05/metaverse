@@ -120,7 +120,8 @@ export class Room {
         consumerSocketId: string,
         producerSocketId: string,
         transportId: string,
-        rtpCapabilities: mediasoupTypes.RtpCapabilities
+        rtpCapabilities: mediasoupTypes.RtpCapabilities,
+        producerId: string
     ): Promise<mediasoupTypes.Consumer | null> {
         const producerPeer = this.peers.get(producerSocketId);
         if (!producerPeer) return null;
@@ -129,37 +130,34 @@ export class Room {
         const transport = consumerPeer?.transports.get(transportId);
         if (!transport) return null;
 
-        const results: mediasoupTypes.Consumer[] = [];
+        const producer = producerPeer.producers.get(producerId);
+        if (!producer) return null;
 
-        for(const producer of producerPeer.producers.values()) {
-            if (!this.router.canConsume({ producerId: producer.id, rtpCapabilities}))
-                continue;
+        if (!this.router.canConsume({ producerId: producer.id, rtpCapabilities }))
+            return null;
 
-            const consumer = await transport.consume({
-                producerId: producer.id,
-                rtpCapabilities,
-                paused: false,
-            });
+        const consumer = await transport.consume({
+            producerId: producer.id,
+            rtpCapabilities,
+            paused: false,
+        });
 
-            consumerPeer!.consumers.set(consumer.id, consumer);
+        consumerPeer!.consumers.set(consumer.id, consumer);
 
-            consumer.on("transportclose", () => {
-                consumerPeer!.consumers.delete(consumer.id);
-            });
+        consumer.on("transportclose", () => {
+            consumerPeer!.consumers.delete(consumer.id);
+        });
 
-            results.push(consumer);
-        }
-
-        return results[0] ?? null;
+        return consumer;
     }
 
-    getOtherProducers(socketId: string): Array<{ socketId: string; producerId: string; kind: string }> {
-        const result: Array<{ socketId: string; producerId: string; kind: string }> = [];
+    getOtherProducers(socketId: string): Array<{ socketId: string; producerId: string; kind: string; playerName: string }> {
+        const result: Array<{ socketId: string; producerId: string; kind: string; playerName: string }> = [];
 
         this.peers.forEach((peer, sid) => {
             if (sid === socketId) return;
             peer.producers.forEach((producer) => {
-                result.push({ socketId: sid, producerId: producer.id, kind: producer.kind });
+                result.push({ socketId: sid, producerId: producer.id, kind: producer.kind, playerName: peer.playerId });
             });
         });
         return result;

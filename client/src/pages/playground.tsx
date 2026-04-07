@@ -7,6 +7,7 @@ import MainContainer from '../components/MainContainer'
 import type { OtherPlayers, PlayerPayload } from '../types/multiplayer'
 import { socket } from '../services/socket'
 import { ChatBox } from '../components/Chat/ChatBox'
+import { VideoCallButton } from '../components/VideoCall/VideoCallButton'
 
 extend({ Container })
 
@@ -51,7 +52,7 @@ export const Playground = () => {
       setOtherPlayers((prev) => ({ ...prev, [id]: state }));
     });
 
-    socket.on("player-left", ({ id }: { id: string}) => {
+    socket.on("player-left", ({ id }: { id: string }) => {
       setOtherPlayers((prev) => {
         const next = { ...prev };
         delete next[id];
@@ -64,7 +65,7 @@ export const Playground = () => {
       socket.off("player-moved");
       socket.off("player-left");
       socket.emit("leave-room", roomId);
-    } 
+    }
   }, [roomId])
 
   return (
@@ -73,6 +74,7 @@ export const Playground = () => {
         <MainContainer canvasSize={canvasSize} otherPlayers={otherPlayers} />
       </Application>
       <ChatBox />
+      {roomId && <VideoCallButton roomId={roomId} />}
       <div style={{
         position: 'fixed',
         bottom: '20px',

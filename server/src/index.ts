@@ -48,7 +48,7 @@ function calculateGroups(roomId: string) {
     }
 
     const previousGroups = roomGroups[roomId] || [];
-    
+
     for (const newGroup of groups) {
         const inGroup = newGroup.length > 1;
         newGroup.forEach(id => {
@@ -56,8 +56,8 @@ function calculateGroups(roomId: string) {
         });
 
         if (newGroup.length < 2) continue;
-        
-        const contributingOldGroups = previousGroups.filter(oldGroup => 
+
+        const contributingOldGroups = previousGroups.filter(oldGroup =>
             oldGroup.some(id => newGroup.includes(id))
         );
 
@@ -91,18 +91,18 @@ io.on("connection", (socket) => {
         const existingPlayers = { ...rooms[roomId] };
         callback({ players: existingPlayers });
 
-        const initialState: PlayerState = {x: 640, y: 640, direction: "DOWN", isMoving: false };
+        const initialState: PlayerState = { x: 640, y: 640, direction: "DOWN", isMoving: false };
         if (name) initialState.name = name;
         rooms[roomId][socket.id] = initialState;
         socket.to(roomId).emit("player-joined", { id: socket.id, ...initialState });
-        
+
         calculateGroups(roomId);
     });
 
     socket.on("player-moved", (state: PlayerState) => {
         const roomId = socket.data.currentRoom;
         if (!roomId || !rooms[roomId]) return;
-        
+
         // Preserve name if not sent back in player-moved
         const existingName = rooms[roomId][socket.id]?.name;
         const newState = { ...state };
@@ -111,14 +111,14 @@ io.on("connection", (socket) => {
             newState.name = finalName;
         }
         rooms[roomId][socket.id] = newState;
-        
+
         const payload: any = { id: socket.id, ...state };
         if (state.name || existingName) {
             payload.name = state.name || existingName;
         }
-        
-        socket.to(roomId).emit("player-moved", payload); 
-        
+
+        socket.to(roomId).emit("player-moved", payload);
+
         calculateGroups(roomId);
     });
 
@@ -128,7 +128,7 @@ io.on("connection", (socket) => {
 
         const currentGroups = roomGroups[roomId] || [];
         const senderGroup = currentGroups.find(g => g.includes(socket.id));
-        
+
         if (senderGroup) {
             const senderName = rooms[roomId][socket.id]?.name;
             senderGroup.forEach(id => {
@@ -155,7 +155,7 @@ io.on("connection", (socket) => {
 
         delete rooms[roomId][socket.id];
         io.to(roomId).emit("player-left", { id: socket.id });
-        
+
         calculateGroups(roomId);
     });
 });

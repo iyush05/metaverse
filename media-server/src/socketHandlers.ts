@@ -15,13 +15,15 @@ export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
                 room.addPeer(socket.id, playerId);
                 socketRoomMap.set(socket.id, roomId);
 
-                socket.emit("routerRtpCapabilities", room.getRtpCapabilities()); //send router capabilities so client can load mediasoup-client device
+                socket.join(roomId);
+
+                socket.emit("routerRtpCapabilities", room.getRtpCapabilities());
 
                 socket.to(roomId).emit("peerJoined", { socketId: socket.id, playerId });
 
                 const existingProducers = room.getOtherProducers(socket.id);
                 if (existingProducers.length > 0) {
-                    socket.emit("existingProducers", existingProducers); //sending new ppeer info abt existing producers
+                    socket.emit("existingProducers", existingProducers);
                 }
             }
         );
@@ -74,10 +76,12 @@ export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
                     const room = await roomManager.getOrCreateRoom(roomId);
                     const producer = await room.produce(socket.id, transportId, kind, rtpParameters);
 
+                    const peer = room.getPeer(socket.id);
                     socket.to(roomId).emit("newProducer", {
                         socketId: socket.id,
                         producerId: producer.id,
                         kind: producer.kind,
+                        playerName: peer?.playerId || "Player",
                     });
 
                     callback({ producerId: producer.id });
@@ -90,13 +94,13 @@ export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
         socket.on(
             "consume",
             async(
-                { producerSocketId, transportId, rtpCapabilities }: any,
+                { producerSocketId, producerId, transportId, rtpCapabilities }: any,
                 callback: Function
             ) => {
                 try {
                     const roomId = socketRoomMap.get(socket.id)!;
                     const room = await roomManager.getOrCreateRoom(roomId);
-                    const consumer = await room.consume(socket.id, producerSocketId, transportId, rtpCapabilities);
+                    const consumer = await room.consume(socket.id, producerSocketId, transportId, rtpCapabilities, producerId);
                     if (!consumer) return callback({ error: "Cannot consume" });
 
                     callback({
@@ -121,6 +125,7 @@ export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
                 roomManager.deleteRoomIfEmpty(roomId);
             }
             socketRoomMap.delete(socket.id);
+            socket.leave(roomId);
             io.to(roomId).emit("peerLeft", { socketId: socket.id });
             console.log(`${socket.id} left room ${roomId}`);
         };

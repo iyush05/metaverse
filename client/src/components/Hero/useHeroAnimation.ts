@@ -31,7 +31,7 @@ export const useHeroAnimation = ({ texture, frameWidth, frameHeight, totalFrames
                 return 10;
         }
     }
-    
+
     const createSprite = (row: number, column: number) => {
         const frame = new Texture({
             source: texture.baseTexture,
@@ -52,7 +52,7 @@ export const useHeroAnimation = ({ texture, frameWidth, frameHeight, totalFrames
         if (isMoving) {
             elapsedTimeRef.current += animationSpeed;
 
-            if(elapsedTimeRef.current >= 1) {
+            if (elapsedTimeRef.current >= 1) {
                 elapsedTimeRef.current = 0;
                 frameRef.current = (frameRef.current + 1) % totalFrames;
             }

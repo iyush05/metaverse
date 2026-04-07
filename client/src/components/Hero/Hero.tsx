@@ -21,7 +21,7 @@ const Hero = ({
     onMove,
     pixelPosition
 }: IHeroProps) => {
-    const position = useRef({x: DEFAULT_POS_X, y: DEFAULT_POS_Y})
+    const position = useRef({ x: DEFAULT_POS_X, y: DEFAULT_POS_Y })
     const targetPosition = useRef<IPosition | null>(null);
     const currentDirection = useRef<Direction | null>(null);
     const { getControlsDirection } = useHeroControls();
@@ -43,7 +43,7 @@ const Hero = ({
 
     const setNextTarget = useCallback((direction: Direction) => {
         if (targetPosition.current) return;
-        const {x, y} = position.current;
+        const { x, y } = position.current;
         currentDirection.current = direction;
         const newTarget = calculateNewTarget(x, y, direction);
 
@@ -69,14 +69,14 @@ const Hero = ({
         }
         //movement
         if (targetPosition.current) {
-            const {completed, position: newPosition} = handleMovement(position.current, targetPosition.current, MOVE_SPEED, delta)
+            const { completed, position: newPosition } = handleMovement(position.current, targetPosition.current, MOVE_SPEED, delta)
 
             position.current = newPosition;
             if (pixelPosition) pixelPosition.current = newPosition;
             isMoving.current = true;
 
             if (completed) {
-                const {x, y} = position.current;
+                const { x, y } = position.current;
                 onMove(x, y);
                 targetPosition.current = null;
                 isMoving.current = false;
@@ -89,22 +89,22 @@ const Hero = ({
                 };
                 socket.emit("player-moved", state);
             }
-            
+
         }
         updateSprite(currentDirection.current, isMoving.current);
     })
 
-  return (
-    <pixiContainer>
-        {sprite && ( <pixiSprite
-            texture={sprite.texture}
-            x={position.current.x}
-            y={position.current.y}
-            anchor={{ x: 0.5, y: 0.5 }}
+    return (
+        <pixiContainer>
+            {sprite && (<pixiSprite
+                texture={sprite.texture}
+                x={position.current.x}
+                y={position.current.y}
+                anchor={{ x: 0.5, y: 0.5 }}
             />)
-        }
-    </pixiContainer>
-  )
+            }
+        </pixiContainer>
+    )
 }
 
 export default Hero

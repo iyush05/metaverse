@@ -1,0 +1,210 @@
+.videocall-container {
+    position: absolute;
+    bottom: 340px;
+    left: 24px;
+    z-index: 1000;
+    animation: vcSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.videocall-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    background: rgba(20, 20, 25, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.videocall-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(74, 222, 128, 0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.videocall-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.videocall-btn:hover::before {
+    opacity: 1;
+}
+
+.videocall-btn:active {
+    transform: translateY(0);
+}
+
+/* Join button (green accent) */
+.videocall-btn--join .videocall-btn__icon {
+    background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.15rem;
+}
+
+.videocall-btn--join:hover {
+    background: rgba(34, 197, 94, 0.12);
+}
+
+/* Leave button (red accent) */
+.videocall-btn--leave .videocall-btn__icon {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.15rem;
+}
+
+.videocall-btn--leave {
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.videocall-btn--leave:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* Connecting state */
+.videocall-btn--connecting {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.videocall-btn--connecting .videocall-btn__icon {
+    animation: vcSpin 1s linear infinite;
+}
+
+/* Live indicator */
+.videocall-live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+    padding: 3px 8px;
+    background: rgba(239, 68, 68, 0.15);
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f87171;
+}
+
+.videocall-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: vcPulse 1.5s ease-in-out infinite;
+}
+
+/* Active call controls row */
+.videocall-active-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Toggle buttons (mic/camera) */
+.videocall-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(20, 20, 25, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.videocall-toggle-btn__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e2e8f0;
+    line-height: 1;
+}
+
+.videocall-toggle-btn--off .videocall-toggle-btn__icon {
+    color: #f87171;
+}
+
+.videocall-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.videocall-toggle-btn:active {
+    transform: translateY(0);
+}
+
+/* Off state  */
+.videocall-toggle-btn--off {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.videocall-toggle-btn--off:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.45);
+}
+
+/* Animations */
+@keyframes vcSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes vcPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+    }
+}
+
+@keyframes vcSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

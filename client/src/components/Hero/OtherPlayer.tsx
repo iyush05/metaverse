@@ -16,7 +16,7 @@ interface OtherPlayerProps extends PlayerState {
 }
 
 export const OtherPlayer = ({ x, y, direction, texture }: OtherPlayerProps) => {
-    const lerpPos = useRef<LerpPosition>({x, y});
+    const lerpPos = useRef<LerpPosition>({ x, y });
     const targetPos = useRef<LerpPosition>({ x, y });
 
     const { sprite, updateSprite } = useHeroAnimation({
@@ -34,7 +34,7 @@ export const OtherPlayer = ({ x, y, direction, texture }: OtherPlayerProps) => {
     useTick((ticker) => {
         const delta = ticker.deltaTime;
         const { completed, position } = handleMovement(lerpPos.current, targetPos.current, MOVE_SPEED, delta);
-        
+
         lerpPos.current = position;
 
         updateSprite(direction, !completed);
@@ -42,13 +42,13 @@ export const OtherPlayer = ({ x, y, direction, texture }: OtherPlayerProps) => {
 
     return (
         <pixiContainer>
-            {sprite && ( <pixiSprite
+            {sprite && (<pixiSprite
                 texture={sprite.texture}
                 x={lerpPos.current.x}
                 y={lerpPos.current.y}
                 anchor={{ x: 0.5, y: 0.5 }}
                 tint={0x88aaff}
-                />)
+            />)
             }
         </pixiContainer>
     );
