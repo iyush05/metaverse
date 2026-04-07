@@ -22,7 +22,7 @@ export const MainContainer = ({
     otherPlayers
 }: PropsWithChildren<IMainContainerProps>) => {
     const heroPixelPosition = useRef({ x: DEFAULT_POS_X, y: DEFAULT_POS_Y });
-    const [heroPosition, setHeroPosition] = useState<{x: number, y: number}>({x: 0, y: 0});
+    const [_heroPosition, setHeroPosition] = useState<{x: number, y: number}>({x: 0, y: 0});
     const [heroTexture, setHeroTexture] = useState<Texture | null>(null);
 
     useEffect(() => {
