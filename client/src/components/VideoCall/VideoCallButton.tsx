@@ -4,7 +4,7 @@ import { SignalingClient } from '../../services/SignalingClient';
 import { VideoOverlay } from '../../mediasoup/VideoOverlay';
 import './VideoCallButton.css';
 
-const MEDIA_SERVER_URL = 'http://localhost:3001';
+const MEDIA_SERVER_URL = import.meta.env.VITE_MEDIA_SERVER_URL;
 
 interface VideoCallButtonProps {
     roomId: string;
