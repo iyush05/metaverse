@@ -14,10 +14,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^25.5.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "@types/express": "^5.0.6"
+
   },
   "dependencies": {
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "express": "^5.2.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.1.0",

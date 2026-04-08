@@ -1,10 +1,15 @@
 import { Server } from "socket.io";
+import express from "express";
+import http from "http";
 import type { PlayerState, Rooms } from "./types/common.js";
 
-const io = new Server(3000, {
-    cors: {
-        origin: "*"
-    }
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
 });
 
 const PROXIMITY_THRESHOLD = 256;
@@ -158,4 +163,10 @@ io.on("connection", (socket) => {
 
         calculateGroups(roomId);
     });
+});
+
+const PORT = Number(process.env.PORT) || 3000;
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
