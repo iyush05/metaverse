@@ -6,6 +6,10 @@ A real-time 2D multiplayer virtual world built for the browser. Walk around a pi
 
 ---
 
+## Demo Video
+
+https://github.com/user-attachments/assets/e33ca806-c433-487e-8eb9-baf06865a8f6
+
 ## ✨ Features
 
 - **Multiplayer World** — Walk around a tile-based 2D map rendered with PixiJS. Every player's movement is synchronized in real time via WebSockets.
